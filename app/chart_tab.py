@@ -394,17 +394,37 @@ class ChartTab(QWidget):
         portfolio = self.portfolio_manager.get_active()
         if portfolio:
             portfolio.add_stock(ticker)
-            self.update_table_view()  # Sadece tabloyu güncelle
+            self.update_table_view()
+            # Diğer tabları güncelle
             if hasattr(self.parent, "portfolio_tab"):
                 self.parent.portfolio_tab.update_list()
+            if hasattr(self.parent, "portfolio_manager_tab"):
+                self.parent.portfolio_manager_tab.update_table()
+            if hasattr(self.parent, "portfolio_timeseries_tab"):
+                self.parent.portfolio_timeseries_tab.update_stock_list()
+            if hasattr(self.parent, "covariance_tab"):
+                self.parent.covariance_tab.portfolio_combo.clear()
+                self.parent.covariance_tab.portfolio_combo.addItem("Tüm Hisseler")
+                for name in self.parent.portfolio_manager.get_portfolio_names():
+                    self.parent.covariance_tab.portfolio_combo.addItem(name)
 
     def remove_from_portfolio(self, ticker):
         portfolio = self.portfolio_manager.get_active()
         if portfolio:
             portfolio.remove_stock(ticker)
-            self.update_table_view()  # Sadece tabloyu güncelle
+            self.update_table_view()
+            # Diğer tabları güncelle
             if hasattr(self.parent, "portfolio_tab"):
                 self.parent.portfolio_tab.update_list()
+            if hasattr(self.parent, "portfolio_manager_tab"):
+                self.parent.portfolio_manager_tab.update_table()
+            if hasattr(self.parent, "portfolio_timeseries_tab"):
+                self.parent.portfolio_timeseries_tab.update_stock_list()
+            if hasattr(self.parent, "covariance_tab"):
+                self.parent.covariance_tab.portfolio_combo.clear()
+                self.parent.covariance_tab.portfolio_combo.addItem("Tüm Hisseler")
+                for name in self.parent.portfolio_manager.get_portfolio_names():
+                    self.parent.covariance_tab.portfolio_combo.addItem(name)
 
     def toggle_local_global(self):
         # 1. tıklama: lokal, 2. tıklama: global, tekrar tıklama: lokal...
