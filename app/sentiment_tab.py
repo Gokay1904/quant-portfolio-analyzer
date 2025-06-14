@@ -194,6 +194,27 @@ class SentimentTab(QWidget):
         df = pd.concat(dfs, ignore_index=True)
         return df
 
+    def colored_sentences_html(self, text, ticker):
+        sents = self.finbert.sentence_sentiments(text, ticker)
+        html = ""
+        for s in sents:
+            if s["sentiment"] == "positive":
+                html += (
+                    '<span style="color:#4A90E2; text-decoration: underline; text-decoration-color: #4A90E2; text-underline-offset: 3px;">'
+                    f'{s["sentence"]} </span>'
+                )
+            elif s["sentiment"] == "negative":
+                html += (
+                    '<span style="color:#D0021B; text-decoration: underline; text-decoration-color: #D0021B; text-underline-offset: 3px;">'
+                    f'{s["sentence"]} </span>'
+                )
+            else:  # neutral
+                html += (
+                    '<span style="color:black; text-decoration: underline; text-decoration-color: black; text-underline-offset: 3px;">'
+                    f'{s["sentence"]} </span>'
+                )
+        return html if html else f'<span style="color:black;">{text}</span>'
+
     def create_news_widget(self, row):
         frame = QFrame()
         frame.setFrameShape(QFrame.StyledPanel)
@@ -224,13 +245,14 @@ class SentimentTab(QWidget):
         top_row.addWidget(sentiment, alignment=Qt.AlignRight)
         layout.addLayout(top_row)
 
-        # Headline, Description, Detailed News (her cümle altı çizili ve renkli)
+        # Headline, Description, Detailed News (sadece ilgili cümleler ve altı çizili)
+        ticker = row.get('ticker', '')
         for field, label in [
             ("headline", "Headline"),
             ("description", "Description"),
             ("detailed_news", "Detailed News")
         ]:
-            html = self.colored_sentences_html(row.get(field, ""), self.finbert)
+            html = self.colored_sentences_html(row.get(field, ""), ticker)
             lbl = QLabel(f"<b>{label}:</b> {html}")
             lbl.setWordWrap(True)
             lbl.setTextFormat(Qt.RichText)
@@ -264,15 +286,3 @@ class SentimentTab(QWidget):
         layout.addLayout(score_row)
 
         return frame
-
-    def colored_sentences_html(self, text, finbert):
-        sents = finbert.sentence_sentiments(text)
-        html = ""
-        for s in sents:
-            if s["sentiment"] == "positive":
-                html += f'<span style="color:#4A90E2;">{s["sentence"]} </span>'
-            elif s["sentiment"] == "negative":
-                html += f'<span style="color:#D0021B;">{s["sentence"]} </span>'
-            else:  # neutral
-                html += f'<span style="color:#888888;">{s["sentence"]} </span>'
-        return html if html else f'<span style="color:black;">{text}</span>'
