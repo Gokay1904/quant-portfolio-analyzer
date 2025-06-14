@@ -5,6 +5,7 @@ from app.chart_tab import ChartTab
 from app.data_tab import DataTab
 from app.covariance_tab import CovarianceTab
 from app.portfolio_timeseries_tab import PortfolioTimeSeriesTab
+from app.sentiment_tab import SentimentTab
 
 class FinanceApp(QWidget):
     def __init__(self):
@@ -33,6 +34,8 @@ class FinanceApp(QWidget):
         self.tabs.addTab(self.covariance_tab, "Kovaryans Analizi")
         self.portfolio_timeseries_tab = PortfolioTimeSeriesTab(self)
         self.tabs.addTab(self.portfolio_timeseries_tab, "Portföy Zaman Serisi")
+        self.sentiment_tab = SentimentTab(self.portfolio_manager)
+        self.tabs.addTab(self.sentiment_tab, "Sentiment")
 
         self.tabs.currentChanged.connect(self.on_tab_changed)
 

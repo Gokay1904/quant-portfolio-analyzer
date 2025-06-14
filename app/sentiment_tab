@@ -1,0 +1,80 @@
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QListWidget, QPushButton, QComboBox, QGroupBox, QTextEdit
+from PyQt5.QtCore import Qt
+import pandas as pd
+import os
+
+class SentimentTab(QWidget):
+    def __init__(self, portfolio_manager):
+        super().__init__()
+        self.portfolio_manager = portfolio_manager
+        self.init_ui()
+
+    def init_ui(self):
+        layout = QVBoxLayout()
+        
+        # Left panel for portfolio selection
+        portfolio_group = QGroupBox("Select Portfolio")
+        portfolio_layout = QVBoxLayout()
+        
+        self.portfolio_list = QListWidget()
+        self.portfolio_list.addItems(self.portfolio_manager.get_portfolio_names())
+        self.portfolio_list.currentItemChanged.connect(self.load_news)
+        portfolio_layout.addWidget(self.portfolio_list)
+        
+        self.date_filter = QComboBox()
+        self.date_filter.addItems(["Daily", "Weekly", "Monthly"])
+        portfolio_layout.addWidget(self.date_filter)
+        
+        portfolio_group.setLayout(portfolio_layout)
+        layout.addWidget(portfolio_group)
+
+        # Right panel for displaying news
+        self.news_display = QTextEdit()
+        self.news_display.setReadOnly(True)
+        layout.addWidget(self.news_display)
+
+        self.setLayout(layout)
+
+    def load_news(self):
+        selected_portfolio = self.portfolio_list.currentItem().text()
+        news_data = self.get_news_for_portfolio(selected_portfolio)
+        self.display_news(news_data)
+
+    def get_news_for_portfolio(self, portfolio_name):
+        # Placeholder for actual news fetching logic
+        # This should read from the CSV files in the sp500_news directory
+        news_file_path = os.path.join("sp500_news", f"{portfolio_name.lower()}_news.csv")
+        if os.path.exists(news_file_path):
+            return pd.read_csv(news_file_path)
+        return pd.DataFrame()
+
+    def display_news(self, news_data):
+        self.news_display.clear()
+        if news_data.empty:
+            self.news_display.setPlainText("No news available for this portfolio.")
+            return
+        
+        for _, row in news_data.iterrows():
+            headline = row['headline']
+            description = row['description']
+            sentiment_scores = self.get_sentiment_scores(row)
+            sentiment_label = self.get_sentiment_label(sentiment_scores)
+            
+            news_item = f"Headline: {headline}\nDescription: {description}\nSentiment: {sentiment_label}\n\n"
+            self.news_display.append(news_item)
+
+    def get_sentiment_scores(self, row):
+        # Placeholder for actual sentiment score extraction logic
+        return {
+            "positive": row.get('positive_score', 0),
+            "neutral": row.get('neutral_score', 0),
+            "negative": row.get('negative_score', 0)
+        }
+
+    def get_sentiment_label(self, scores):
+        if scores['positive'] > scores['neutral'] and scores['positive'] > scores['negative']:
+            return "POSITIVE"
+        elif scores['negative'] > scores['positive'] and scores['negative'] > scores['neutral']:
+            return "NEGATIVE"
+        else:
+            return "NEUTRAL"
